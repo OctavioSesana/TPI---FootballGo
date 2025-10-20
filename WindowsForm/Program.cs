@@ -30,7 +30,6 @@ namespace FootballGo.UI
 
             var provider = services.BuildServiceProvider();
 
-            // arrancar con el menú
             Application.Run(provider.GetRequiredService<MenuForm>());
         }
     }
