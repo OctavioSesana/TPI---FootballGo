@@ -19,7 +19,6 @@ namespace FootballGo.UI
 
             var services = new ServiceCollection();
 
-            // Registrar servicios y forms
             services.AddScoped<ClienteService>();
             services.AddScoped<EmpleadoService>();
             services.AddScoped<Form1>();
