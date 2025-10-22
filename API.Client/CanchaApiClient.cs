@@ -52,14 +52,41 @@ namespace API.Clients
 
         public static async Task UpdateAsync(CanchaDTO cancha)
         {
-            var response = await client.PutAsJsonAsync("canchas", cancha);
-            response.EnsureSuccessStatusCode();
+            var response = await client.PutAsJsonAsync("canchas", cancha); // ✅ sin id en ruta
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception(
+                    $"Error al actualizar la cancha N°{cancha.NroCancha}. " +
+                    $"Status: {response.StatusCode}. {error}"
+                );
+            }
         }
+
 
         public static async Task DeleteAsync(int id)
         {
-            var response = await client.DeleteAsync($"canchas/{id}");
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                var res = await client.DeleteAsync($"canchas/{id}");
+                if (res.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    var detail = await res.Content.ReadAsStringAsync();
+                    throw new Exception($"La cancha {id} no existe. Detalle: {detail}");
+                }
+
+                res.EnsureSuccessStatusCode(); // 2xx = OK
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"No pude conectar con la API al eliminar la cancha {id}: {ex.Message}", ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                throw new Exception($"Timeout al eliminar la cancha {id}: {ex.Message}", ex);
+            }
         }
+
     }
 }

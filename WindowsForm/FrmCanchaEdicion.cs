@@ -86,6 +86,8 @@ namespace FootballGo.UI
             btnGuardar.Click += btnGuardar_Click;
             btnCancelar.Click -= btnCancelar_Click;
             btnCancelar.Click += btnCancelar_Click;
+            
+
         }
 
         private void btnGuardar_Click(object? sender, EventArgs e)
@@ -107,6 +109,10 @@ namespace FootballGo.UI
                     // Edición
                     _service.Actualizar(nro, estado, tipo, precio);
                 }
+
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+
 
                 // Volver al listado dentro del dashboard
                 GetDashboard()?.CargarEnPanel(new FrmCanchas());

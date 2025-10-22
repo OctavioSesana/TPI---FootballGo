@@ -71,9 +71,23 @@ namespace FootballGo.UI
 
         private void AbrirEdicion()
         {
+            //var sel = Seleccionada();
+            //if (sel == null) { MessageBox.Show("Seleccioná una cancha."); return; }
+            //GetDashboard()?.CargarEnPanel(new FrmCanchaEdicion(sel));
+
+
             var sel = Seleccionada();
-            if (sel == null) { MessageBox.Show("Seleccioná una cancha."); return; }
-            GetDashboard()?.CargarEnPanel(new FrmCanchaEdicion(sel));
+            if (sel == null)
+            {
+                MessageBox.Show("Seleccioná una cancha.");
+                return;
+            }
+
+            using var frm = new FrmCanchaEdicion(sel);
+            if (frm.ShowDialog(this) == DialogResult.OK)
+                CargarDatos(); // refresca la grilla al volver
+
+
         }
 
         private void btnEliminar_Click(object sender, EventArgs e)
