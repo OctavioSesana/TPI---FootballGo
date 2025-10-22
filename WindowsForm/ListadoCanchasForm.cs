@@ -20,6 +20,7 @@ namespace MisCanchasApp
             _mailUsuario = mailUsuario;
         }
 
+
         private async void ListadoCanchasForm_Load(object sender, EventArgs e)
         {
             ConfigurarGrilla();
@@ -120,7 +121,15 @@ namespace MisCanchasApp
                 }
 
                 var reservaForm = new ReservaForm(canchaSeleccionada, _mailUsuario);
-                reservaForm.ShowDialog();
+                reservaForm.TopLevel = false;
+                reservaForm.FormBorderStyle = FormBorderStyle.None;
+                reservaForm.Dock = DockStyle.Fill;
+
+                this.Controls.Add(reservaForm);
+
+                reservaForm.BringToFront();
+
+                reservaForm.Show();
             }
         }
     }
