@@ -8,6 +8,9 @@ namespace FootballGo.UI
         private System.ComponentModel.IContainer components = null;
         private MenuStrip menuStrip;
         private Panel contentPanel;
+        private System.Windows.Forms.DataGridView dgvReservas;
+        private System.Windows.Forms.Button btnOrdenarAsc;
+        private System.Windows.Forms.Button btnOrdenarDesc;
 
         protected override void Dispose(bool disposing)
         {
@@ -54,6 +57,51 @@ namespace FootballGo.UI
             Load += EmpleadoDashboardForm_Load;
             ResumeLayout(false);
             PerformLayout();
+            // btnOrdenarAsc
+            // 
+            this.btnOrdenarAsc = new System.Windows.Forms.Button();
+            this.btnOrdenarAsc.Text = "Fecha Asc.";
+            this.btnOrdenarAsc.Location = new System.Drawing.Point(20, 10); // Ejemplo: En la esquina superior izquierda del panel
+            this.btnOrdenarAsc.Name = "btnOrdenarAsc";
+            this.btnOrdenarAsc.Size = new System.Drawing.Size(200, 30);
+            this.btnOrdenarAsc.UseVisualStyleBackColor = true;
+            this.btnOrdenarAsc.Click += new System.EventHandler(this.btnOrdenarAsc_Click); // ASOCIAR EVENTO
+            this.contentPanel.Controls.Add(this.btnOrdenarAsc);
+            this.btnOrdenarAsc.Visible = false;
+            // 
+            // btnOrdenarDesc
+            // 
+            this.btnOrdenarDesc = new System.Windows.Forms.Button();
+            this.btnOrdenarDesc.Text = "Fecha Desc.";
+            this.btnOrdenarDesc.Location = new System.Drawing.Point(230, 10); // Ubicado a la derecha del botón Ascendente
+            this.btnOrdenarDesc.Name = "btnOrdenarDesc";
+            this.btnOrdenarDesc.Size = new System.Drawing.Size(200, 30);
+            this.btnOrdenarDesc.UseVisualStyleBackColor = true;
+            this.btnOrdenarDesc.Click += new System.EventHandler(this.btnOrdenarDesc_Click); // ASOCIAR EVENTO
+            this.contentPanel.Controls.Add(this.btnOrdenarDesc);
+            this.btnOrdenarDesc.Visible = false;
+            // 
+            // dgvReservas
+            // 
+            this.dgvReservas = new System.Windows.Forms.DataGridView();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvReservas)).BeginInit();
+            this.dgvReservas.AllowUserToOrderColumns = true;
+
+            this.dgvReservas.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvReservas.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvReservas.Location = new System.Drawing.Point(20, 50);
+            this.dgvReservas.Name = "dgvReservas";
+            this.dgvReservas.ReadOnly = true;
+            this.dgvReservas.Size = new System.Drawing.Size(960, 600);
+            this.dgvReservas.TabIndex = 5;
+            this.dgvReservas.Visible = false;
+
+            this.contentPanel.Controls.Add(this.dgvReservas);
+
+            ((System.ComponentModel.ISupportInitialize)(this.dgvReservas)).EndInit();
+
         }
     }
 }

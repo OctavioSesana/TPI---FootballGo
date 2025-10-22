@@ -1,7 +1,10 @@
-﻿using System.Windows.Forms;
+﻿using API.Clients;
 using Domain.Model;
 using Domain.Services;
+using System.Windows.Forms;
 using EmpleadoDTO = DTOs.Empleado;
+using ReservaDTO = DTOs.Reserva;
+using System;
 
 namespace FootballGo.UI
 {
@@ -9,7 +12,7 @@ namespace FootballGo.UI
     {
         private readonly Empleado _empleado;
         private readonly MenuForm _menuForm;
-
+        private List<ReservaDTO> _reservasCache = new List<ReservaDTO>();
         private Form? _child; 
 
         public EmpleadoDashboardForm(Empleado empleado, MenuForm menuForm)
@@ -130,9 +133,71 @@ namespace FootballGo.UI
             }
         }
 
-        private void btnGestion_Click(object? sender, System.EventArgs e)
+        private async void btnGestion_Click(object? sender, System.EventArgs e)
         {
-            MessageBox.Show("Funcionalidad de gestión de reservas no implementada.", "Info");
+            this.dgvReservas.Visible = false;
+            this.btnOrdenarAsc.Visible = false;
+            this.btnOrdenarDesc.Visible = false;
+
+            this.dgvReservas.DataSource = null;
+            this.dgvReservas.Rows.Clear();
+            this.dgvReservas.Columns.Clear();
+
+            try
+            {
+                _reservasCache = (await ReservaApiClient.GetAllAsync()).ToList();
+
+                if (_reservasCache.Any())
+                {
+                    this.dgvReservas.Visible = true;
+                    this.btnOrdenarAsc.Visible = true;
+                    this.btnOrdenarDesc.Visible = true;
+
+                    MostrarReservas(_reservasCache.OrderBy(r => r.FechaReserva.Date.Add(r.HoraInicio)));
+                }
+                else
+                {
+                    MessageBox.Show("No hay reservas activas para gestionar.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar las reservas: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void MostrarReservas(IEnumerable<ReservaDTO> reservas)
+        {
+            var listaParaGrid = reservas.Select(r => new
+            {
+                ID = r.IdReserva,
+                Cancha = r.NroCancha,
+                Cliente = r.mailUsuario,
+                Fecha = r.FechaReserva.ToShortDateString(),
+                Hora = r.HoraInicio.ToString(@"hh\:mm"),
+                Total = r.PrecioTotal.ToString("C")
+            }).ToList();
+
+            this.dgvReservas.DataSource = listaParaGrid;
+            this.dgvReservas.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void btnOrdenarAsc_Click(object? sender, EventArgs e)
+        {
+            if (_reservasCache.Any())
+            {
+                var reservasAsc = _reservasCache.OrderBy(r => r.FechaReserva.Date.Add(r.HoraInicio));
+                MostrarReservas(reservasAsc);
+            }
+        }
+
+        private void btnOrdenarDesc_Click(object? sender, EventArgs e)
+        {
+            if (_reservasCache.Any())
+            {
+                var reservasDesc = _reservasCache.OrderByDescending(r => r.FechaReserva.Date.Add(r.HoraInicio));
+                MostrarReservas(reservasDesc);
+            }
         }
 
         private void btnAlta_Click_1(object? sender, System.EventArgs e)
