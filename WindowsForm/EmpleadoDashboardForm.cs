@@ -66,10 +66,22 @@ namespace FootballGo.UI
             var itListado = new ToolStripMenuItem("Listado de Canchas", null, btnListadoCanchas_Click);
             var itAltaArt = new ToolStripMenuItem("Listado de clientes", null, btnListadoClientes_Click);
             var itReservas = new ToolStripMenuItem("Gestión de Reservas", null, btnGestion_Click);
-            mGestion.DropDownItems.AddRange(new[] { itAltaCanchas, itListado, itAltaArt, itReservas });
+            var itArticulos = new ToolStripMenuItem("Cargar Artículos", null, btnCargarArticulos_Click);
+            var verArticulos = new ToolStripMenuItem("Lista de Artículos", null, btnVerArticulos_Click);
+            mGestion.DropDownItems.AddRange(new[] { itAltaCanchas, itListado, itAltaArt, itReservas, itArticulos, verArticulos });
 
             menuStrip.Items.Add(mPerfil);
             menuStrip.Items.Add(mGestion);
+        }
+
+        private void btnVerArticulos_Click(object? sender, EventArgs e)
+        {
+            MessageBox.Show("Funcionalidad en desarrollo.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btnCargarArticulos_Click(object? sender, EventArgs e)
+        {
+            MessageBox.Show("Funcionalidad en desarrollo.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnCerrarSesion_Click(object? sender, System.EventArgs e) => _menuForm.CerrarSesion();
