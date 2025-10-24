@@ -1,10 +1,11 @@
 ﻿using API.Clients;
 using Domain.Model;
 using Domain.Services;
+using FootballGo.Desktop;
+using System;
 using System.Windows.Forms;
 using EmpleadoDTO = DTOs.Empleado;
 using ReservaDTO = DTOs.Reserva;
-using System;
 
 namespace FootballGo.UI
 {
@@ -12,6 +13,7 @@ namespace FootballGo.UI
     {
         private readonly Empleado _empleado;
         private readonly MenuForm _menuForm;
+        private readonly ArticuloService _articuloService = new ArticuloService();
         private List<ReservaDTO> _reservasCache = new List<ReservaDTO>();
         private Form? _child; 
 
@@ -76,12 +78,14 @@ namespace FootballGo.UI
 
         private void btnVerArticulos_Click(object? sender, EventArgs e)
         {
-            MessageBox.Show("Funcionalidad en desarrollo.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var articuloListForm = new ListadoArticulosForm(_articuloService);
+            CargarEnPanel(articuloListForm);
         }
 
         private void btnCargarArticulos_Click(object? sender, EventArgs e)
         {
-            MessageBox.Show("Funcionalidad en desarrollo.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var articuloCargaForm = new ArticuloCargaForm(_articuloService);
+            CargarEnPanel(articuloCargaForm);
         }
 
         private void btnCerrarSesion_Click(object? sender, System.EventArgs e) => _menuForm.CerrarSesion();
