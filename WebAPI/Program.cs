@@ -13,6 +13,7 @@ builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<EmpleadoService>();
 builder.Services.AddScoped<CanchaService>();
 builder.Services.AddScoped<ReservaService>();
+builder.Services.AddScoped<ArticuloService>();
 
 
 builder.Services.AddEndpointsApiExplorer();
@@ -38,5 +39,6 @@ app.MapClienteEndpoints();
 app.MapEmpleadoEndpoints();
 app.MapCanchaEndpoints();
 app.MapReservaEndpoints();
+app.MapArticuloEndpoints();
 
 app.Run();

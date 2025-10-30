@@ -4,6 +4,7 @@ using FootballGo.UI;
 using Newtonsoft.Json;
 using System;
 using System.Drawing;
+using System.Linq;
 
 namespace MisCanchasApp
 {
@@ -17,6 +18,12 @@ namespace MisCanchasApp
             InitializeComponent();
             Load += ListadoCanchasForm_Load;
             dgvCanchas.CellClick += dgvCanchas_CellClick;
+
+            //Filtros
+            rbFiltroTodos.CheckedChanged += Filtro_CheckedChanged;
+            rbFiltro5.CheckedChanged += Filtro_CheckedChanged;
+            rbFiltro7.CheckedChanged += Filtro_CheckedChanged;
+
             _mailUsuario = mailUsuario;
         }
 
@@ -25,6 +32,14 @@ namespace MisCanchasApp
         {
             ConfigurarGrilla();
             await CargarCanchasAsync();
+        }
+
+        private async void Filtro_CheckedChanged(object? sender, EventArgs e)
+        {
+            if (((RadioButton)sender).Checked)
+            {
+                await CargarCanchasAsync();
+            }
         }
 
         private void ConfigurarGrilla()
@@ -99,10 +114,25 @@ namespace MisCanchasApp
 
         private async Task CargarCanchasAsync()
         {
-            var canchas = _service.Listar()
-                                  .OrderBy(c => c.NroCancha)
-                                  .ToList();
-            dgvCanchas.DataSource = canchas;
+            IEnumerable<Cancha> canchas = _service.Listar();
+
+            string tipoCanchaFiltro = "Todos";
+
+            if (rbFiltro5.Checked)
+            {
+                tipoCanchaFiltro = "5";
+            }
+            else if (rbFiltro7.Checked)
+            {
+                tipoCanchaFiltro = "7";
+            }
+
+            if (tipoCanchaFiltro != "Todos")
+            {
+                canchas = canchas.Where(c => c.TipoCancha.ToString() == tipoCanchaFiltro);
+            }
+
+            dgvCanchas.DataSource = canchas.OrderBy(c => c.NroCancha).ToList();
         }
 
         private void dgvCanchas_CellClick(object sender, DataGridViewCellEventArgs e)
