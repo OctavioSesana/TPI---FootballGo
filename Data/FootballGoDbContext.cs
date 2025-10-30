@@ -22,10 +22,10 @@ namespace Data
             if (!optionsBuilder.IsConfigured)
             {
                 // Servidor Emilio
-                //optionsBuilder.UseSqlServer(@"Server=DESKTOP-URP6JK1\SQLEXPRESS;Database=FootballGoDB;Trusted_Connection=True;TrustServerCertificate=True");
+                optionsBuilder.UseSqlServer(@"Server=DESKTOP-URP6JK1\SQLEXPRESS;Database=FootballGoDB;Trusted_Connection=True;TrustServerCertificate=True");
 
                 //Servidor Octa
-                optionsBuilder.UseSqlServer(@"Server=OCTAV10\SQLEXPRESS;Database=FootballGoDB;Trusted_Connection=True;TrustServerCertificate=True");
+                //optionsBuilder.UseSqlServer(@"Server=OCTAV10\SQLEXPRESS;Database=FootballGoDB;Trusted_Connection=True;TrustServerCertificate=True");
             }
         }
 

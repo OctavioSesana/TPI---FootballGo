@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FootballGo - backup\FootballGo\Domain.Services\Domain.Services.csproj" />
-    <ProjectReference Include="..\DTOs\DTOs.csproj" />
+    <ProjectReference Include="..\Data\Data.csproj" />
+    <ProjectReference Include="..\Domain.Services\Domain.Services.csproj" />
   </ItemGroup>
 
 </Project>
