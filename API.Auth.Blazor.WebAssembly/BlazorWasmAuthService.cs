@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
@@ -8,11 +9,20 @@ namespace API.Clients
     {
         private readonly HttpClient _httpClient;
 
+        // Estado interno del usuario
+        private bool _isAuthenticated;
+        private string? _token;
+        private string? _username;
+
+        // Evento de cambio de autenticación
+        public event Action<bool>? AuthenticationStateChanged;
+
         public BlazorWasmAuthService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
+        // LOGIN
         public async Task<bool> LoginAsync(string username, string password)
         {
             var response = await _httpClient.PostAsJsonAsync("auth/login", new
@@ -21,7 +31,62 @@ namespace API.Clients
                 Password = password
             });
 
-            return response.IsSuccessStatusCode;
+            _isAuthenticated = response.IsSuccessStatusCode;
+
+            if (_isAuthenticated)
+            {
+                // Ejemplo: el token podría venir en el cuerpo de la respuesta
+                _token = await response.Content.ReadAsStringAsync();
+                _username = username;
+            }
+
+            // Notificar a los suscriptores (componentes Blazor, etc.)
+            AuthenticationStateChanged?.Invoke(_isAuthenticated);
+
+            return _isAuthenticated;
+        }
+
+        // LOGOUT
+        public Task LogoutAsync()
+        {
+            _isAuthenticated = false;
+            _token = null;
+            _username = null;
+
+            AuthenticationStateChanged?.Invoke(false);
+            return Task.CompletedTask;
+        }
+
+        // Devuelve si el usuario está autenticado
+        public Task<bool> IsAuthenticatedAsync()
+        {
+            return Task.FromResult(_isAuthenticated);
+        }
+
+        // Devuelve el token actual
+        public Task<string?> GetTokenAsync()
+        {
+            return Task.FromResult(_token);
+        }
+
+        // Devuelve el nombre de usuario actual
+        public Task<string?> GetUsernameAsync()
+        {
+            return Task.FromResult(_username);
+        }
+
+        // Simula verificación de expiración del token
+        public Task CheckTokenExpirationAsync()
+        {
+            // Podés implementar lógica real más adelante
+            return Task.CompletedTask;
+        }
+
+        // Simula verificación de permisos
+        public Task<bool> HasPermissionAsync(string permission)
+        {
+            // Podés implementar roles y claims más adelante
+            return Task.FromResult(true);
         }
     }
 }

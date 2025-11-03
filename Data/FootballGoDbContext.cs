@@ -16,6 +16,8 @@ namespace Data
         public DbSet<Cancha> Canchas => Set<Cancha>();
         public DbSet<Reserva> Reservas => Set<Reserva>();
 
+        public DbSet<Articulo> Articulos => Set<Articulo>();
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

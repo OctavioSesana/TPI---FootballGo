@@ -1,8 +1,9 @@
-namespace API.Clients.Models
+namespace DTOs
 {
     public class LoginResponse
     {
-        public string? Token { get; set; }
-        // agrega lo que devuelva tu API: ExpiresIn, Role, etc.
+        public string Token { get; set; } = string.Empty;
+        public DateTime ExpiresAt { get; set; }
+        public string Username { get; set; } = string.Empty;
     }
 }

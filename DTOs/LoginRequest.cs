@@ -1,4 +1,4 @@
-namespace API.Clients.Models
+namespace DTOs
 {
     public class LoginRequest
     {
