@@ -9,7 +9,7 @@ namespace API.Clients
         Task<bool> IsAuthenticatedAsync();
         Task<string?> GetTokenAsync();
         Task<string?> GetUsernameAsync();
-        Task<bool> LoginAsync(string username, string password);
+        Task<bool> LoginAsync(string email, string password);
         Task LogoutAsync();
         Task CheckTokenExpirationAsync();
         Task<bool> HasPermissionAsync(string permission);

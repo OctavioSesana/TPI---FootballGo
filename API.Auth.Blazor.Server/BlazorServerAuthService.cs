@@ -18,7 +18,7 @@ namespace API.Auth.Blazor.Server
         private class SessionData
         {
             public string? Token { get; set; }
-            public string? Username { get; set; }
+            public string? Email { get; set; }
             public DateTime Expiration { get; set; }
         }
 
@@ -54,7 +54,7 @@ namespace API.Auth.Blazor.Server
         {
             try
             {
-                return Task.FromResult(_currentSession?.Username);
+                return Task.FromResult(_currentSession?.Email);
             }
             catch
             {
@@ -62,11 +62,11 @@ namespace API.Auth.Blazor.Server
             }
         }
 
-        public async Task<bool> LoginAsync(string username, string password)
+        public async Task<bool> LoginAsync(string email, string password)
         {
             var request = new LoginRequest
             {
-                Username = username,
+                Email = email,
                 Password = password
             };
 
@@ -78,7 +78,7 @@ namespace API.Auth.Blazor.Server
                 _currentSession = new SessionData
                 {
                     Token = response.Token,
-                    Username = response.Username,
+                    Email = response.Email,
                     Expiration = response.ExpiresAt
                 };
 

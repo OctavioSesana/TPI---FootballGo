@@ -12,7 +12,7 @@ namespace API.Clients
         // Estado interno del usuario
         private bool _isAuthenticated;
         private string? _token;
-        private string? _username;
+        private string? _email;
 
         // Evento de cambio de autenticación
         public event Action<bool>? AuthenticationStateChanged;
@@ -23,11 +23,11 @@ namespace API.Clients
         }
 
         // LOGIN
-        public async Task<bool> LoginAsync(string username, string password)
+        public async Task<bool> LoginAsync(string email, string password)
         {
             var response = await _httpClient.PostAsJsonAsync("auth/login", new
             {
-                Username = username,
+                Email = email,
                 Password = password
             });
 
@@ -37,7 +37,7 @@ namespace API.Clients
             {
                 // Ejemplo: el token podría venir en el cuerpo de la respuesta
                 _token = await response.Content.ReadAsStringAsync();
-                _username = username;
+                _email = email;
             }
 
             // Notificar a los suscriptores (componentes Blazor, etc.)
@@ -51,7 +51,7 @@ namespace API.Clients
         {
             _isAuthenticated = false;
             _token = null;
-            _username = null;
+            _email = null;
 
             AuthenticationStateChanged?.Invoke(false);
             return Task.CompletedTask;
@@ -72,7 +72,7 @@ namespace API.Clients
         // Devuelve el nombre de usuario actual
         public Task<string?> GetUsernameAsync()
         {
-            return Task.FromResult(_username);
+            return Task.FromResult(_email);
         }
 
         // Simula verificación de expiración del token

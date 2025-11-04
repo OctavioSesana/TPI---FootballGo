@@ -1,4 +1,6 @@
-﻿namespace Domain.Model
+﻿using System.Security.Cryptography;
+
+namespace Domain.Model
 {
     public class Cliente
     {
@@ -7,6 +9,7 @@
         public string Apellido { get; private set; }
         public string Email { get; private set; }
         public int dni { get; private set; }
+       // public string Salt { get; private set; }
         public int telefono { get; private set; }
         public DateTime FechaAlta { get; private set; }
         public string Contrasenia { get; set; } = string.Empty;
@@ -36,6 +39,9 @@
         {
             Contrasenia = contrasenia;
         }
+
+
+        
     }
 
     public class ClienteCriteria

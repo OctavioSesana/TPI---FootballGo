@@ -2,6 +2,7 @@ using Data;
 using Domain.Services;
 using Microsoft.EntityFrameworkCore;
 using FootballGo.WebAPI;
+using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,5 +41,6 @@ app.MapEmpleadoEndpoints();
 app.MapCanchaEndpoints();
 app.MapReservaEndpoints();
 app.MapArticuloEndpoints();
+app.MapAuthEndpoints();
 
 app.Run();

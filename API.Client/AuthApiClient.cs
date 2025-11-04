@@ -13,6 +13,9 @@ namespace API.Clients
             var json = JsonSerializer.Serialize(request);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
+            Console.WriteLine($"[CLIENT DEBUG] BaseAddress: {httpClient.BaseAddress} -> POST /auth/login");
+
+
             var response = await httpClient.PostAsync("/auth/login", content);
 
             if (response.IsSuccessStatusCode)
