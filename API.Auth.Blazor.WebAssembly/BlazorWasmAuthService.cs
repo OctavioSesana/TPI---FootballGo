@@ -2,6 +2,8 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using DTOs;
+using static System.Net.WebRequestMethods;
 
 namespace API.Clients
 {
@@ -87,6 +89,18 @@ namespace API.Clients
         {
             // Podés implementar roles y claims más adelante
             return Task.FromResult(true);
+        }
+
+        public async Task<RegisterResponse?> RegisterAsync(RegisterRequest request)
+        {
+            var httpResponse = await _httpClient.PostAsJsonAsync("auth/register", request);
+
+            if (httpResponse.IsSuccessStatusCode)
+                return await httpResponse.Content.ReadFromJsonAsync<RegisterResponse>();
+
+            return null;
+
+
         }
     }
 }

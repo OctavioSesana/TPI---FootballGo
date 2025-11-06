@@ -114,7 +114,7 @@ namespace API.Auth.Blazor.Server
 
                 var handler = new JwtSecurityTokenHandler();
                 var jsonToken = handler.ReadJwtToken(token);
-                
+
                 var permissionClaims = jsonToken.Claims
                     .Where(c => c.Type == "permission")
                     .Select(c => c.Value);
@@ -125,6 +125,11 @@ namespace API.Auth.Blazor.Server
             {
                 return Task.FromResult(false);
             }
+        }
+
+        public Task<RegisterResponse?> RegisterAsync(RegisterRequest request)
+        {
+            throw new NotImplementedException();
         }
     }
 }

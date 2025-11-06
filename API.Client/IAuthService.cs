@@ -1,3 +1,5 @@
+using DTOs;
+
 namespace API.Clients
 {
     public interface IAuthService
@@ -13,5 +15,7 @@ namespace API.Clients
         Task LogoutAsync();
         Task CheckTokenExpirationAsync();
         Task<bool> HasPermissionAsync(string permission);
+
+        Task<RegisterResponse?> RegisterAsync(RegisterRequest request);
     }
 }

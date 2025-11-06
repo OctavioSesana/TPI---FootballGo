@@ -1,0 +1,156 @@
+﻿@page "/registro"
+@using System.ComponentModel.DataAnnotations
+@using API.Clients
+@using DTOs
+@inject IAuthService Auth
+@inject NavigationManager Nav
+
+<PageTitle>Registro</PageTitle>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header text-center">
+                    <h3>Crear cuenta</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Error))
+                    {
+                        <div class="alert alert-danger">@Error</div>
+                    }
+
+                    <EditForm Model="@Model" OnValidSubmit="@OnSubmitAsync">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <InputText class="form-control" @bind-Value="Model.Nombre" />
+                            <ValidationMessage For="@(() => Model.Nombre)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Apellido</label>
+                            <InputText class="form-control" @bind-Value="Model.Apellido" />
+                            <ValidationMessage For="@(() => Model.Apellido)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <InputText class="form-control" @bind-Value="Model.Email" />
+                            <ValidationMessage For="@(() => Model.Email)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">DNI</label>
+                            <InputText class="form-control" @bind-Value="Model.Dni" />
+                            <ValidationMessage For="@(() => Model.Dni)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <InputText class="form-control" @bind-Value="Model.Telefono" />
+                            <ValidationMessage For="@(() => Model.Telefono)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <InputText type="password" class="form-control" @bind-Value="Model.Password" />
+                            <ValidationMessage For="@(() => Model.Password)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Confirmar contraseña</label>
+                            <InputText type="password" class="form-control" @bind-Value="Model.PasswordConfirm" />
+                            <ValidationMessage For="@(() => Model.PasswordConfirm)" />
+                        </div>
+
+                        <button class="btn btn-primary w-100" disabled="@IsBusy">
+                            @(IsBusy ? "Registrando..." : "Registrarme")
+                        </button>
+
+                        <div class="text-center mt-3">
+                            <a href="/login">¿Ya tenés cuenta? Iniciar sesión</a>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterViewModel Model = new();
+    private bool IsBusy = false;
+    private string? Error;
+
+    private async Task OnSubmitAsync()
+    {
+        Error = null;
+        IsBusy = true;
+
+        try
+        {
+            // Map ViewModel -> RegisterRequest (si tus DTOs tienen otros nombres, adaptá acá)
+            var request = new RegisterRequest
+                {
+                    Nombre = Model.Nombre,
+                    Apellido = Model.Apellido,
+                    Email = Model.Email,
+                    Dni = Model.Dni,
+                    Telefono = Model.Telefono,
+                    Contrasenia = Model.Password
+                };
+
+            var response = await Auth.RegisterAsync(request);
+
+            // Éxito → redirigimos a Login o Home
+            //Nav.NavigateTo("/login", forceLoad: false);
+
+            if (response != null)
+            {
+                Console.WriteLine("✅ Registro exitoso desde Blazor"); // <-- este aparece en consola del navegador
+                // o si querés en el DOM:
+                // await JS.InvokeVoidAsync("console.log", "✅ Registro exitoso desde Blazor");
+
+                // redirigís al login
+                Nav.NavigateTo("/login");
+            }
+        }
+        
+        catch (Exception)
+        {
+            Error = "Ocurrió un error inesperado.";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    // Validaciones de UI (pueden diferir de las del backend)
+    public class RegisterViewModel
+    {
+        [Required, StringLength(50)]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required, StringLength(50)]
+        public string Apellido { get; set; } = string.Empty;
+
+        [Required, EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required, RegularExpression(@"^\d{7,10}$", ErrorMessage = "DNI inválido")]
+        public string Dni { get; set; } = string.Empty;
+
+        [Required, RegularExpression(@"^\+?\d{7,15}$", ErrorMessage = "Teléfono inválido")]
+        public string Telefono { get; set; } = string.Empty;
+
+        [Required, StringLength(100, MinimumLength = 6)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required, Compare(nameof(Password), ErrorMessage = "Las contraseñas no coinciden")]
+        public string PasswordConfirm { get; set; } = string.Empty;
+    }
+}
