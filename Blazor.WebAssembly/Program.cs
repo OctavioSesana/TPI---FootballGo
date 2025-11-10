@@ -16,6 +16,9 @@ builder.Services.AddScoped(sp => new HttpClient
 // IAuthService también debe ser Scoped (no Singleton)
 builder.Services.AddScoped<IAuthService, BlazorWasmAuthService>();
 
+// Canchas API client
+builder.Services.AddScoped<ICanchaClient, CanchaClient>();
+
 var app = builder.Build();
 
 // (Opcional) Si usás un proveedor estático para tus ApiClients:
