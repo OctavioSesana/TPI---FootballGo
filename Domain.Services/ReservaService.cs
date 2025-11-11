@@ -82,5 +82,14 @@ namespace Domain.Services
         {
             return new List<Reserva>(_repo.GetByCriteria(texto));
         }
+
+        public Task<IEnumerable<Reserva>> GetByClienteEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new ArgumentException("El mail del usuario es obligatorio.", nameof(email));
+
+            var result = _repo.GetByEmail(email) ?? Enumerable.Empty<Reserva>();
+            return Task.FromResult<IEnumerable<Reserva>>(result);
+        }
     }
 }

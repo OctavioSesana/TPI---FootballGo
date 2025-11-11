@@ -1,0 +1,83 @@
+﻿@page "/mis-reservas"
+@using DTOs
+@using API.Clients
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<h3 class="mb-3">Mis Reservas</h3>
+
+@if (isLoading)
+{
+    <p>Cargando...</p>
+}
+else if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+else if (reservas is null || !reservas.Any())
+{
+    <div class="alert alert-info">No tenés reservas registradas.</div>
+}
+else
+{
+    <table class="table table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>N° Reserva</th>
+                <th>N° Cancha</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Precio Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in reservas)
+            {
+                <tr>
+                    <td>@r.IdReserva</td>
+                    <td>@r.NroCancha</td>
+                    <td>@r.FechaReserva.ToString("dd/MM/yyyy")</td>
+                    <td>@r.HoraInicio</td>
+                    <td>$@r.PrecioTotal</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Reserva> reservas = new();
+    private bool isLoading = true;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // ⚙️ Leemos el valor plano del localStorage
+            var email = await JS.InvokeAsync<string>("localStorage.getItem", "clienteEmail");
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                Console.WriteLine("⚠️ No se encontró clienteEmail en localStorage");
+                Nav.NavigateTo("/login");
+                return;
+            }
+
+            // Elimina comillas extra si vienen del JSON.stringify
+            email = email.Replace("\"", "");
+
+            Console.WriteLine($"✅ ClienteEmail obtenido: {email}");
+
+            var data = await ReservaApiClient.GetByClienteMailAsync(email);
+            reservas = data.ToList();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

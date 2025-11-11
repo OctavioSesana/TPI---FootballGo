@@ -149,5 +149,31 @@ namespace API.Clients
                 throw new Exception($"Timeout al buscar reservas: {ex.Message}", ex);
             }
         }
+
+        public static async Task<IEnumerable<ReservaDTO>> GetByClienteMailAsync(string email)
+        {
+            try
+            {
+                var response = await client.GetAsync($"reservas/cliente/{Uri.EscapeDataString(email)}");
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<IEnumerable<ReservaDTO>>()
+                           ?? Enumerable.Empty<ReservaDTO>();
+                }
+
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Error al obtener reservas del cliente con mail {email}. Status: {response.StatusCode}, Detalle: {errorContent}");
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error de conexión al obtener reservas del cliente {email}: {ex.Message}", ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                throw new Exception($"Timeout al obtener reservas del cliente {email}: {ex.Message}", ex);
+            }
+        }
+
+
     }
 }

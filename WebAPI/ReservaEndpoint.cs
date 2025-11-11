@@ -55,6 +55,14 @@ namespace FootballGo.WebAPI
             .WithOpenApi();
 
 
+            app.MapGet("/reservas/cliente/{email}", async (string email, ReservaService service) =>
+            {
+                var reservas = await service.GetByClienteEmailAsync(email);
+                return Results.Ok(reservas);
+            });
+
+
+
             // ✅ POST /reservas -> crear nueva reserva
             group.MapPost("/", (ReservaDTO dto, ReservaService service) =>
             {
