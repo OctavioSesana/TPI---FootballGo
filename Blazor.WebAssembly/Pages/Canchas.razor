@@ -3,12 +3,25 @@
 @using API.Clients
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Globalization
+@using System.Net.Http.Headers
 @using CanchaDto = DTOs.Cancha
 @using EstadoCancha = Domain.Model.EstadoCancha
 @inject ICanchaClient CanchaClient
 @inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject IAuthService Auth
+@inject HttpClient Http
 
 <h3 class="mb-3">Listado de Canchas Disponibles</h3>
+
+@if (!string.IsNullOrEmpty(ClienteEmail))
+{
+    <h4 class="text-primary mb-4">👋 Bienvenido, @ClienteEmail</h4>
+}
+else
+{
+    <h4 class="text-secondary mb-4">👋 Bienvenido</h4>
+}
 
 @if (IsLoading)
 {
@@ -99,6 +112,22 @@ else
                 </div>
             </div>
 
+            @* MENSAJES *@
+            @if (!string.IsNullOrEmpty(SuccessMsg))
+            {
+                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                    @SuccessMsg
+                    <button type="button" class="btn-close" @onclick="() => SuccessMsg = null"></button>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(ErrorReserva))
+            {
+                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    @ErrorReserva
+                    <button type="button" class="btn-close" @onclick="() => ErrorReserva = null"></button>
+                </div>
+            }
+
             @if (IsLoadingSlots)
             {
                 <p class="mt-3">Cargando disponibilidad...</p>
@@ -145,8 +174,13 @@ else
 <button class="btn btn-outline-primary mt-3" @onclick="Reload">Recargar</button>
 
 @code {
+    private string? ClienteEmail; // 👈 Mail mostrado y enviado al backend
     private bool IsLoading = true;
     private string? Error;
+
+    // Mensajes para el panel de detalle
+    private string? SuccessMsg;
+    private string? ErrorReserva;
 
     // Datos
     private List<CanchaDto> _canchas = new();
@@ -167,6 +201,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // 🧠 Email del usuario (lo trae del storage/JWT según tu AuthService)
+        ClienteEmail = await Auth.GetUsernameAsync();
+        Console.WriteLine($"📧 Email cargado en Canchas: {ClienteEmail}");
+
         await LoadAsync();
     }
 
@@ -194,6 +232,10 @@ else
 
         try
         {
+            // limpiar mensajes al cambiar fecha o recargar
+            SuccessMsg = null;
+            ErrorReserva = null;
+
             IsLoadingSlots = true;
             ErrorSlots = null;
             Slots.Clear();
@@ -211,21 +253,73 @@ else
     {
         if (_canchaSeleccionada is null) return;
 
-        var ok = await CanchaClient.ReservarAsync(_canchaSeleccionada.NroCancha, _fecha, slot.HoraDesde, slot.HoraHasta);
-        if (ok)
+        // limpiar mensajes previos
+        SuccessMsg = null;
+        ErrorReserva = null;
+
+        try
         {
-            await CargarDisponibilidad();
-            await JS.InvokeVoidAsync("alert", "¡Reserva confirmada!");
+            
+            
+
+            //  Email del usuario: usa el que ya cargamos; si no, intenta del localStorage como respaldo
+            var email = ClienteEmail;
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                email = await JS.InvokeAsync<string>("localStorage.getItem", "email");
+            }
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                await JS.InvokeVoidAsync("alert", "No hay un email guardado. Iniciá sesión primero.");
+                return;
+            }
+
+            // Armamos la request con mailUsuario (Opción A)
+            var req = new
+            {
+                fecha = _fecha.ToString("yyyy-MM-dd"),
+                horaDesde = slot.HoraDesde,
+                horaHasta = slot.HoraHasta,
+                mailUsuario = email   // 👈 clave para que el backend NO use 'invitado@local'
+            };
+
+            //  POST directo al endpoint de reservas de canchas
+            var resp = await Http.PostAsJsonAsync($"/canchas/{_canchaSeleccionada.NroCancha}/reservas", req);
+
+            if (resp.IsSuccessStatusCode)
+            {
+                await CargarDisponibilidad();
+
+                SuccessMsg = $"✅ Reserva confirmada para el día {_fecha:dd/MM/yyyy} de {slot.HoraDesde} a {slot.HoraHasta} en la cancha N° {_canchaSeleccionada.NroCancha}.";
+
+                // autocerrar a los 4s
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(4000);
+                    SuccessMsg = null;
+                    await InvokeAsync(StateHasChanged);
+                });
+            }
+            else
+            {
+                var msg = await resp.Content.ReadAsStringAsync();
+                ErrorReserva = $"No se pudo reservar el horario. {msg}";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", "No se pudo reservar. Intentalo nuevamente.");
+            ErrorReserva = $"Ocurrió un error al intentar reservar. Detalle: {ex.Message}";
         }
     }
 
     private async Task MostrarDetalle(CanchaDto cancha)
     {
         _canchaSeleccionada = cancha;
+
+        // limpiar mensajes al cambiar de cancha
+        SuccessMsg = null;
+        ErrorReserva = null;
+
         await CargarDisponibilidad();
     }
 }

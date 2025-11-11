@@ -1,0 +1,108 @@
+﻿@page "/mi-cuenta"
+
+@using API.Clients
+@inject IAuthService Auth
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject HttpClient Http
+
+@code {
+    private enum Tab { Perfil, Reservas }
+    private Tab active = Tab.Perfil;
+
+    private string? usuario;
+    private int? clienteId; // TODO: obténlo del token o de un endpoint /me
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuario = await Auth.GetUsernameAsync();
+        // clienteId = await ObtenerClienteId();
+    }
+
+    private void GoEditarPerfil() => Nav.NavigateTo("/perfil/editar");
+
+    private async Task CerrarSesionAsync()
+    {
+        await Auth.LogoutAsync();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+
+    private async Task EliminarCuentaAsync()
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar tu cuenta? Esta acción es permanente.");
+        if (!confirm) return;
+
+        if (clienteId is null)
+        {
+            await JS.InvokeVoidAsync("alert", "No se pudo determinar el ID del cliente.");
+            return;
+        }
+
+        try
+        {
+            // Ajusta la ruta a la de tu API real:
+            var resp = await Http.DeleteAsync($"api/clientes/{clienteId.Value}");
+            if (!resp.IsSuccessStatusCode)
+            {
+                var msg = await resp.Content.ReadAsStringAsync();
+                throw new Exception($"API devolvió {(int)resp.StatusCode}: {msg}");
+            }
+
+            await Auth.LogoutAsync();
+            Nav.NavigateTo("/registro", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Error al eliminar la cuenta: {ex.Message}");
+        }
+    }
+}
+
+<div class="container py-3">
+    <h4 class="text-center mb-3">Bienvenido! Usuario : @usuario</h4>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <button class="nav-link @(active == Tab.Perfil ? "active" : "")"
+                    @onclick="() => active = Tab.Perfil">
+                Perfil
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link @(active == Tab.Reservas ? "active" : "")"
+                    @onclick="() => active = Tab.Reservas">
+                Reservas
+            </button>
+        </li>
+    </ul>
+
+    @if (active == Tab.Perfil)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body d-flex flex-column gap-2">
+                <h5 class="card-title mb-2">Gestionar perfil</h5>
+
+                <button class="btn btn-primary w-100" @onclick="GoEditarPerfil">
+                    ✏️ Editar mis datos
+                </button>
+
+                <button class="btn btn-outline-secondary w-100" @onclick="CerrarSesionAsync">
+                    🚪 Cerrar sesión
+                </button>
+
+                <button class="btn btn-outline-danger w-100" @onclick="EliminarCuentaAsync">
+                    🗑️ Eliminar cuenta
+                </button>
+            </div>
+        </div>
+    }
+    else if (active == Tab.Reservas)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Mis reservas</h5>
+                <MisReservas />  @* reemplazá por tu componente real *@
+            </div>
+        </div>
+    }
+</div>
