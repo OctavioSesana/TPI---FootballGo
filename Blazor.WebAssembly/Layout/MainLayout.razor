@@ -1,16 +1,41 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
+
+<div class="app-shell">
+    <aside class="app-sidebar">
         <NavMenu />
-    </div>
+    </aside>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+    <main class="app-content">
+        <div class="container-fluid py-3">
             @Body
-        </article>
+        </div>
     </main>
 </div>
+
+<style>
+    /* Contenedor general */
+    .app-shell {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .app-sidebar {
+        width: 240px;
+        min-height: 100vh;
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+        background: #0b1e4d; /* mismo tono que venías usando */
+        color: #fff;
+        box-shadow: 0 0 16px rgba(0,0,0,.15);
+        z-index: 10;
+    }
+
+    /* Área de contenido */
+    .app-content {
+        flex: 1;
+        background: #f7f7fb;
+        overflow-x: hidden;
+    }
+</style>

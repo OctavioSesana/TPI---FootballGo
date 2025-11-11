@@ -1,19 +1,81 @@
-﻿@inject NavigationManager Nav
+﻿@implements IDisposable
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
-<nav class="nav flex-column p-3">
-    <button class="btn btn-link text-start" @onclick="IrAMisReservas">
-        <span class="oi oi-list-rich me-2"></span> Mis Reservas
-    </button>
-</nav>
+<div class="nav-menu">
+    <h4 class="text-white mb-4">⚽ FootballGo</h4>
+
+    @if (isLoggedIn)
+    {
+        <button class="btn btn-link text-start text-white w-100 mb-2" @onclick="IrAMisReservas">
+            Mis Reservas
+        </button>
+        <button class="btn btn-link text-start text-white w-100 mb-2" @onclick="IrAMiPerfil">
+            Mi Perfil
+        </button>
+        <button class="btn btn-link text-start text-danger w-100" @onclick="CerrarSesion">
+            Cerrar Sesión
+        </button>
+    }
+    else
+    {
+        <button class="btn btn-link text-start text-white w-100" @onclick="IrALogin">
+            Iniciar Sesión
+        </button>
+    }
+</div>
 
 @code {
+    private bool isLoggedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshLoginState();
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        await RefreshLoginState();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RefreshLoginState()
+    {
+        var email = await JS.InvokeAsync<string>("localStorage.getItem", "clienteEmail");
+        // por si viene con comillas
+        email = email?.Replace("\"", "");
+        isLoggedIn = !string.IsNullOrWhiteSpace(email);
+        Console.WriteLine($"[NavMenu] isLoggedIn = {isLoggedIn}, email = {email}");
+    }
+
     private async Task IrAMisReservas()
     {
-        var clienteJson = await JS.InvokeAsync<string>("localStorage.getItem", "clienteEmail");
-        if (string.IsNullOrEmpty(clienteJson))
-            Nav.NavigateTo("/login");
-        else
-            Nav.NavigateTo("/mis-reservas");
+        await RefreshLoginState();
+        if (!isLoggedIn) { Nav.NavigateTo("/login"); return; }
+        Nav.NavigateTo("/mis-reservas");
+    }
+
+    private async Task IrAMiPerfil()
+    {
+        await RefreshLoginState();
+        if (!isLoggedIn) { Nav.NavigateTo("/login"); return; }
+        Nav.NavigateTo("/mi-perfil");
+    }
+
+    private void IrALogin() => Nav.NavigateTo("/login");
+
+    private async Task CerrarSesion()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "clienteEmail");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "cliente");
+        await RefreshLoginState();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
     }
 }
