@@ -65,6 +65,15 @@ namespace Data
             return false;
         }
 
+        //PARA LA UI DATOS CLIENTES
+        public async Task<Domain.Model.Cliente?> GetByEmailAsync(string email)
+        {
+            using var context = CreateContext();
+            return await context.Clientes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Email.ToLower() == email.ToLower());
+        }
+
         public bool EmailExists(string email, int? excludeId = null)
         {
             using var context = CreateContext();
@@ -75,6 +84,9 @@ namespace Data
             }
             return query.Any();
         }
+
+        //////
+        
 
         public Domain.Model.Cliente? GetByEmail(string email) // Fully qualify 'Cliente' to resolve ambiguity
         {

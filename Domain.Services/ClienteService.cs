@@ -23,7 +23,8 @@ namespace Domain.Services
             return cliente.Contrasenia == contrasenia ? cliente : null;
         }
 
-
+        //PARA LA UI DATOS CLIENTES
+        public Task<Cliente?> GetByEmailAsync(string email) => _repo.GetByEmailAsync(email);
         public void Add(Cliente cliente) => _repo.Add(cliente);
 
         public bool Delete(int id) => _repo.Delete(id);
@@ -35,6 +36,8 @@ namespace Domain.Services
         public bool Update(Cliente cliente) => _repo.Update(cliente);
 
         public bool EmailExists(string email, int? excludeId = null) => _repo.EmailExists(email, excludeId);
+
+
 
         public IEnumerable<Cliente> GetByCriteria(FootballGo.DTOs.ClienteCriteria criteria) => _repo.GetByCriteria(criteria);
     }

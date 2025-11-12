@@ -1,1 +1,215 @@
-﻿
+﻿@page "/mi-perfil"
+@using DTOs
+@using API.Clients
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject IClienteClient ClienteClient
+
+<h3 class="mb-3">👤 Mi Perfil</h3>
+
+@if (IsLoading)
+{
+    <p>Cargando...</p>
+}
+else if (!string.IsNullOrEmpty(Error))
+{
+    <div class="alert alert-danger">@Error</div>
+}
+else if (Cliente is null)
+{
+    <div class="alert alert-warning">No se encontró el cliente.</div>
+}
+else
+{
+    <EditForm Model="Edit" OnValidSubmit="GuardarCambios">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="card p-3 mb-3">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <InputText class="form-control" @bind-Value="Edit.Nombre" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Apellido</label>
+                <InputText class="form-control" @bind-Value="Edit.Apellido" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email (solo lectura)</label>
+                <InputText class="form-control" @bind-Value="Edit.Email" disabled />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Teléfono</label>
+                <InputText class="form-control" @bind-Value="Edit.Telefono" />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="Cancelar">Cancelar</button>
+                <button type="button" class="btn btn-danger ms-auto" @onclick="EliminarCuenta">Eliminar mi cuenta</button>
+            </div>
+        </div>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(Success))
+    {
+        <div class="alert alert-success mt-2">@Success</div>
+    }
+}
+
+@code {
+    private Cliente? Cliente;
+    private ClienteUpdateRequest Edit = new();
+    private bool IsLoading = true;
+    private string? Error;
+    private string? Success;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Verificás login por localStorage
+        var email = await JS.InvokeAsync<string>("localStorage.getItem", "clienteEmail");
+        email = email?.Replace("\"", "");
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        try
+        {
+            Cliente = await ClienteClient.GetByEmailAsync(email);
+            if (Cliente is not null)
+            {
+                Edit = new ClienteUpdateRequest
+                    {
+                        Id = Cliente.Id,
+                        Nombre = Cliente.Nombre,
+                        Apellido = Cliente.Apellido,
+                        Email = Cliente.Email,
+                        Telefono = Cliente.telefono.ToString()
+                    };
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = $"No se pudo cargar el perfil: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task GuardarCambios()
+    {
+        Error = Success = null;
+
+        try
+        {
+            // Convertir teléfono del form (si está vacío, uso el actual)
+            int telInt = Cliente?.telefono ?? 0;
+            if (!string.IsNullOrWhiteSpace(Edit.Telefono))
+            {
+                if (!int.TryParse(Edit.Telefono, out telInt))
+                {
+                    Error = "Teléfono inválido (debe ser numérico).";
+                    return;
+                }
+            }
+
+            // Armar el DTO EXACTO que espera la API
+            var body = new DTOs.Cliente
+                {
+                    Id = Edit.Id,
+                    Nombre = Edit.Nombre,
+                    Apellido = Edit.Apellido,
+                    Email = Edit.Email,
+                    dni = Cliente!.dni,           // preservar (no se edita en el form)
+                    telefono = telInt,                 // int
+                    FechaAlta = Cliente!.FechaAlta,     // preservar
+                    Contrasenia = Cliente!.Contrasenia    // preservar
+                };
+
+            var ok = await ClienteClient.UpdateAsync(Edit.Id, body); // PUT /clientes/{id}
+
+            if (!ok)
+            {
+                Error = "No se pudieron guardar los cambios.";
+                return;
+            }
+
+            // Si el usuario cambió el email, actualizá localStorage (opcional)
+            if (!string.Equals(Cliente.Email, Edit.Email, StringComparison.OrdinalIgnoreCase))
+                await JS.InvokeVoidAsync("localStorage.setItem", "clienteEmail", Edit.Email);
+
+            // Refrescar datos y UI
+            Cliente = await ClienteClient.GetByIdAsync(Edit.Id);
+            Success = "Los cambios se guardaron correctamente.";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Error = $"Error al guardar: {ex.Message}";
+        }
+    }
+
+    private void Cancelar()
+    {
+        if (Cliente is null) return;
+        Edit = new ClienteUpdateRequest
+            {
+                Id = Cliente.Id,
+                Nombre = Cliente.Nombre,
+                Apellido = Cliente.Apellido,
+                Email = Cliente.Email,
+                Telefono = Cliente.telefono.ToString()
+            };
+        Success = Error = null;
+        StateHasChanged();
+    }
+
+    private async Task EliminarCuenta()
+    {
+        Error = Success = null;
+
+        var confirm = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar tu cuenta? Esta acción no se puede deshacer.");
+        if (!confirm) return;
+
+        try
+        {
+            var ok = await ClienteClient.DeleteAsync(Edit.Id);
+            if (ok)
+            {
+                // limpiar sesión y enviar a login
+                await JS.InvokeVoidAsync("localStorage.removeItem", "clienteEmail");
+                await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+                await JS.InvokeVoidAsync("localStorage.removeItem", "cliente");
+                Nav.NavigateTo("/login", forceLoad: true);
+            }
+            else
+            {
+                Error = "No se pudo eliminar la cuenta.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = $"Error al eliminar: {ex.Message}";
+        }
+    }
+
+    // DTO de edición (podés moverlo a DTOs si querés)
+    public class ClienteUpdateRequest
+    {
+        public int Id { get; set; }
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Nombre { get; set; } = string.Empty;
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Apellido { get; set; } = string.Empty;
+        [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.EmailAddress]
+        public string Email { get; set; } = string.Empty;
+        public string? Telefono { get; set; }
+    }
+}

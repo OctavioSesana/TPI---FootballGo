@@ -19,6 +19,11 @@ builder.Services.AddBlazoredLocalStorage();
 // IAuthService también debe ser Scoped (no Singleton)
 builder.Services.AddScoped<IAuthService, BlazorWasmAuthService>();
 
+//CLIENTE
+builder.Services.AddScoped<IClienteClient, ClienteClient>();
+
+
+
 // Canchas API client
 builder.Services.AddScoped<ICanchaClient, CanchaClient>();
 
