@@ -1,9 +1,11 @@
 ﻿@page "/mis-reservas"
 @using DTOs
 @using API.Clients
+@using Blazor.WebAssembly.Shared
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 
+<VolverAtras />
 <h3 class="mb-3">Mis Reservas</h3>
 
 @if (isLoading)

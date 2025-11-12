@@ -27,6 +27,23 @@
         <span class="dismiss">🗙</span>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+
+    <script>
+        // Botón universal "Volver"
+        window.appGoBack = function () {
+            try {
+                if (history.length > 1) {
+                    history.back();
+                } else {
+                    // fallback si no hay historial (primera página abierta)
+                    window.location.assign('/');
+                }
+            } catch (e) {
+                window.location.assign('/');
+            }
+        };
+    </script>
+
 </body>
 
 </html>

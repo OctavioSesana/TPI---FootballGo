@@ -6,11 +6,14 @@
 @using System.Net.Http.Headers
 @using CanchaDto = DTOs.Cancha
 @using EstadoCancha = Domain.Model.EstadoCancha
+@using Blazor.WebAssembly.Shared
 @inject ICanchaClient CanchaClient
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject IAuthService Auth
 @inject HttpClient Http
+
+<VolverAtras />
 
 <h3 class="mb-3">Listado de Canchas Disponibles</h3>
 

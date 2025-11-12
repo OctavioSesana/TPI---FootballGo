@@ -1,0 +1,15 @@
+﻿@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<button class="btn btn-light border rounded-pill shadow-sm px-3 py-2 mb-3 d-flex align-items-center gap-2" @onclick="OnVolverAtrasClick">
+    <span class="fs-5">⬅️</span>
+    <span>Volver</span>
+</button>
+
+@code {
+    private async Task OnVolverAtrasClick()
+    {
+        // Intenta usar el historial del navegador
+        await JS.InvokeVoidAsync("history.back");
+    }
+}
