@@ -7,6 +7,10 @@
 
     @if (isLoggedIn)
     {
+
+        <button class="btn btn-link text-start text-white w-100 mb-2" @onclick="IrAReservaCancha">
+            Reserva Cancha
+        </button>
         <button class="btn btn-link text-start text-white w-100 mb-2" @onclick="IrAMisReservas">
             Mis Reservas
         </button>
@@ -47,6 +51,14 @@
         email = email?.Replace("\"", "");
         isLoggedIn = !string.IsNullOrWhiteSpace(email);
         Console.WriteLine($"[NavMenu] isLoggedIn = {isLoggedIn}, email = {email}");
+    }
+
+
+    private async Task IrAReservaCancha()
+    {
+        await RefreshLoginState();
+        if (!isLoggedIn) { Nav.NavigateTo("/login"); return; }
+        Nav.NavigateTo("/canchas");
     }
 
     private async Task IrAMisReservas()
