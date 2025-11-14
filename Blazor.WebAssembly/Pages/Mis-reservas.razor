@@ -30,17 +30,33 @@ else
                 <th>Fecha</th>
                 <th>Hora</th>
                 <th>Precio Total</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var r in reservas)
             {
+                var puedeCancelar = PuedeCancelar(r);
+
                 <tr>
                     <td>@r.IdReserva</td>
                     <td>@r.NroCancha</td>
                     <td>@r.FechaReserva.ToString("dd/MM/yyyy")</td>
                     <td>@r.HoraInicio</td>
                     <td>$@r.PrecioTotal</td>
+                    <td>
+                        @if (puedeCancelar)
+                        {
+                            <button class="btn btn-danger btn-sm"
+                                    @onclick="() => CancelarReserva(r.IdReserva)">
+                                Cancelar
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted small">No cancelable</span>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
@@ -80,6 +96,68 @@ else
         finally
         {
             isLoading = false;
+        }
+    }
+
+    // 👇 Lógica para saber si se puede cancelar o no
+    private bool PuedeCancelar(Reserva r)
+    {
+        // SUPONGO que HoraInicio es TimeSpan.
+        // Si fuera string tipo "18:00", se puede adaptar a TimeSpan.Parse.
+        DateTime inicio;
+
+        if (r.HoraInicio is TimeSpan ts)
+        {
+            inicio = r.FechaReserva.Date + ts;
+        }
+        else
+        {
+            // fallback por si HoraInicio viene como string u otro tipo
+            if (!TimeSpan.TryParse(r.HoraInicio.ToString(), out var tsParsed))
+                return false;
+
+            inicio = r.FechaReserva.Date + tsParsed;
+        }
+
+        // Solo se puede cancelar si todavía no llegó la hora de inicio
+        return inicio > DateTime.Now;
+    }
+
+    private async Task CancelarReserva(int idReserva)
+    {
+        // Seguridad extra en el servidor de Blazor:
+        var reserva = reservas.FirstOrDefault(x => x.IdReserva == idReserva);
+        if (reserva is null)
+        {
+            error = "Reserva no encontrada.";
+            return;
+        }
+
+        if (!PuedeCancelar(reserva))
+        {
+            error = "No podés cancelar una reserva que ya comenzó o ya pasó.";
+            return;
+        }
+
+        bool confirm = await JS.InvokeAsync<bool>(
+            "confirm",
+            $"¿Seguro que querés cancelar la reserva #{idReserva}?"
+        );
+
+        if (!confirm)
+            return;
+
+        try
+        {
+            await ReservaApiClient.DeleteAsync(idReserva);
+
+            reservas = reservas
+                .Where(r => r.IdReserva != idReserva)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            error = $"Error al cancelar reserva: {ex.Message}";
         }
     }
 }
