@@ -26,6 +26,8 @@ namespace FootballGo.WebAPI
             .Produces<IEnumerable<ReservaDTO>>(StatusCodes.Status200OK)
             .WithOpenApi();
 
+                
+
             // 🏆 SOLUCIÓN AL ERROR 404: Mapeo para la búsqueda por criterio (GET /reservas/criteria?texto=...)
             group.MapGet("/criteria", ([FromQuery] string texto, ReservaService service) =>
             {
@@ -54,14 +56,29 @@ namespace FootballGo.WebAPI
             .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
 
+            //PARA REPORTE
+            app.MapGet("/clientes/total-gastado", async (
+                [FromQuery] string email,
+                ReservaService reservaService) =>
+            {
+                var total = await reservaService.GetTotalGastadoPorEmailAsync(email);
+
+                return Results.Ok(new
+                {
+                    Email = email,
+                    TotalGastado = total
+                });
+            })
+                .WithName("GetTotalGastadoPorEmail")
+                .Produces(StatusCodes.Status200OK)
+                .WithOpenApi();
+
 
             app.MapGet("/reservas/cliente/{email}", async (string email, ReservaService service) =>
             {
                 var reservas = await service.GetByClienteEmailAsync(email);
                 return Results.Ok(reservas);
             });
-
-
 
             // ✅ POST /reservas -> crear nueva reserva
             group.MapPost("/", (ReservaDTO dto, ReservaService service) =>
@@ -127,5 +144,7 @@ namespace FootballGo.WebAPI
             HoraInicio = r.HoraInicio,
             PrecioTotal = r.PrecioTotal
         };
+
+
     }
 }

@@ -1,0 +1,56 @@
+﻿@page "/mi-reporte"
+@using API.Clients
+@inject IJSRuntime JS
+@inject ICanchaClient CanchaClient
+@inject NavigationManager Nav
+
+<h3>📊 Mi Reporte de Gastos</h3>
+
+@if (IsLoading)
+{
+    <p>Cargando...</p>
+}
+else if (!string.IsNullOrEmpty(Error))
+{
+    <div class="alert alert-danger">@Error</div>
+}
+else
+{
+    <div class="card p-3 mt-3">
+        <h5>Total gastado en reservas:</h5>
+        <p class="fs-4 text-success fw-bold">
+            @($"${TotalGastado:N2}")
+        </p>
+    </div>
+}
+
+@code {
+    private bool IsLoading = true;
+    private string? Error;
+    private decimal TotalGastado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var email = await JS.InvokeAsync<string>("localStorage.getItem", "clienteEmail");
+        email = email?.Replace("\"", "");
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        try
+        {
+            TotalGastado = await CanchaClient.GetTotalGastadoPorEmailAsync(email);
+        }
+        catch (Exception ex)
+        {
+            Error = $"Error al cargar el reporte: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}

@@ -17,6 +17,9 @@
         <button class="btn btn-link text-start text-white w-100 mb-2" @onclick="IrAMiPerfil">
             Mi Perfil
         </button>
+        <button class="btn btn-link text-start text-white w-100 mb-2" @onclick="IrAReporte">
+            📊 Ver Reporte
+        </button>
         <button class="btn btn-link text-start text-danger w-100" @onclick="CerrarSesion">
             Cerrar Sesión
         </button>
@@ -74,6 +77,14 @@
         if (!isLoggedIn) { Nav.NavigateTo("/login"); return; }
         Nav.NavigateTo("/mi-perfil");
     }
+
+    private async Task IrAReporte()
+    {
+        await RefreshLoginState();
+        if (!isLoggedIn) { Nav.NavigateTo("/login"); return; }
+        Nav.NavigateTo("/mi-reporte");
+    }
+
 
     private void IrALogin() => Nav.NavigateTo("/login");
 

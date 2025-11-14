@@ -5,6 +5,7 @@
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject IClienteClient ClienteClient
+@inject ICanchaClient CanchaClient
 
 
 <VolverAtras />
@@ -58,6 +59,8 @@ else
         </div>
     </EditForm>
 
+  
+
     @if (!string.IsNullOrEmpty(Success))
     {
         <div class="alert alert-success mt-2">@Success</div>
@@ -70,6 +73,8 @@ else
     private bool IsLoading = true;
     private string? Error;
     private string? Success;
+
+    private decimal? TotalGastado;   // 👈 NUEVO
 
     protected override async Task OnInitializedAsync()
     {
@@ -88,14 +93,16 @@ else
             if (Cliente is not null)
             {
                 Edit = new ClienteUpdateRequest
-                    {
-                        Id = Cliente.Id,
-                        Nombre = Cliente.Nombre,
-                        Apellido = Cliente.Apellido,
-                        Email = Cliente.Email,
-                        Telefono = Cliente.telefono.ToString()
-                    };
+                {
+                    Id = Cliente.Id,
+                    Nombre = Cliente.Nombre,
+                    Apellido = Cliente.Apellido,
+                    Email = Cliente.Email,
+                    Telefono = Cliente.telefono.ToString()
+                };
             }
+
+            
         }
         catch (Exception ex)
         {
@@ -126,16 +133,16 @@ else
 
             // Armar el DTO EXACTO que espera la API
             var body = new DTOs.Cliente
-                {
-                    Id = Edit.Id,
-                    Nombre = Edit.Nombre,
-                    Apellido = Edit.Apellido,
-                    Email = Edit.Email,
-                    dni = Cliente!.dni,           // preservar (no se edita en el form)
-                    telefono = telInt,                 // int
-                    FechaAlta = Cliente!.FechaAlta,     // preservar
-                    Contrasenia = Cliente!.Contrasenia    // preservar
-                };
+            {
+                Id = Edit.Id,
+                Nombre = Edit.Nombre,
+                Apellido = Edit.Apellido,
+                Email = Edit.Email,
+                dni = Cliente!.dni,              // preservar (no se edita en el form)
+                telefono = telInt,               // int
+                FechaAlta = Cliente!.FechaAlta,  // preservar
+                Contrasenia = Cliente!.Contrasenia // preservar
+            };
 
             var ok = await ClienteClient.UpdateAsync(Edit.Id, body); // PUT /clientes/{id}
 
@@ -164,13 +171,13 @@ else
     {
         if (Cliente is null) return;
         Edit = new ClienteUpdateRequest
-            {
-                Id = Cliente.Id,
-                Nombre = Cliente.Nombre,
-                Apellido = Cliente.Apellido,
-                Email = Cliente.Email,
-                Telefono = Cliente.telefono.ToString()
-            };
+        {
+            Id = Cliente.Id,
+            Nombre = Cliente.Nombre,
+            Apellido = Cliente.Apellido,
+            Email = Cliente.Email,
+            Telefono = Cliente.telefono.ToString()
+        };
         Success = Error = null;
         StateHasChanged();
     }

@@ -107,5 +107,14 @@ namespace Data
 
             return reservas;
         }
+
+        public async Task<decimal> GetTotalGastadoPorEmailAsync(string email)
+        {
+            using var context = CreateContext();
+
+            return await context.Reservas
+                .Where(r => r.mailUsuario.ToLower() == email.ToLower())
+                .SumAsync(r => r.PrecioTotal);
+        }
     }
 }

@@ -91,5 +91,8 @@ namespace Domain.Services
             var result = _repo.GetByEmail(email) ?? Enumerable.Empty<Reserva>();
             return Task.FromResult<IEnumerable<Reserva>>(result);
         }
+
+        public Task<decimal> GetTotalGastadoPorEmailAsync(string email)
+            => _repo.GetTotalGastadoPorEmailAsync(email);
     }
 }

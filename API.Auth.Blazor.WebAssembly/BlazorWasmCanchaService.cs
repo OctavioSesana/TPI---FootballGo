@@ -75,4 +75,17 @@ public class CanchaClient : ICanchaClient
         Console.WriteLine($"❌ Error al reservar. StatusCode: {resp.StatusCode}");
         return false;
     }
+
+    // REPORTE: total gastado en todo el historial del cliente (por Email)
+    public async Task<decimal> GetTotalGastadoPorEmailAsync(string email)
+    {
+        await AgregarTokenAsync();
+
+        var url = $"clientes/total-gastado?email={Uri.EscapeDataString(email)}";
+
+        var resp = await _http.GetFromJsonAsync<TotalGastadoResponse>(url);
+
+        return resp?.TotalGastado ?? 0m;
+    }
+
 }
